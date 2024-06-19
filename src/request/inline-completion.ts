@@ -7,19 +7,45 @@ interface GenerateResponse {
 }
 
 function getRequestDataCPU(fimPrefixCode: string, fimSuffixCode: string): RequestData {
+    // return {
+    //     uri: '/completion',
+    //     body: {
+    //         message: [
+    //             { "role": 'prefix', "content": fimPrefixCode },
+    //             { "role": 'suffix', "content": fimSuffixCode }
+    //         ],
+    //         max_tokens: 100,
+    //         temperature: 0
+    //     }
+    // };
+
     return {
-        uri: "/infill",
+        uri: "/completion",
         body: {
-            "input_prefix": fimPrefixCode,
-            "input_suffix": fimSuffixCode,
-            "n_predict": MAX_TOKENS_COMPLETION,
-            "temperature": 0.2,
-            "repetition_penalty": 1.0,
-            "top_k": 10,
-            "top_p": 0.95,
-            "stop": STOP_WORDS
+            "prompt": `<fim_prefix>${fimPrefixCode}<fim_suffix>${fimSuffixCode}<fim_middle>`,
+            "n_predict": 12,
+            // "temperature": 0.8,
+            // "repetition_penalty": 1.2,
+            // "top_k": 40,
+            // "top_p": 0.95,
+            // "stream": true,
+            // "stop": STOP_WORDS
         }
     };
+
+    // return {
+    //     uri: "/infill",
+    //     body: {
+    //         "input_prefix": fimPrefixCode,
+    //         "input_suffix": fimSuffixCode,
+    //         "n_predict": MAX_TOKENS_COMPLETION,
+    //         "temperature": 0.2,
+    //         "repetition_penalty": 1.0,
+    //         "top_k": 10,
+    //         "top_p": 0.95,
+    //         "stop": STOP_WORDS
+    //     }
+    // };
 }
 
 function getRequestDataGPU(fimPrefixCode: string, fimSuffixCode: string): RequestData {
@@ -57,13 +83,13 @@ export async function postCompletion(fimPrefixCode: string, fimSuffixCode: strin
     }
 }
 
-function extractContent(responseData: string): string {
+function extractContent(responseData: { content: '' }): string {
     let content = "";
-    const dataList = responseData.split("\n\n");
+    const dataList = responseData.content.split("\n\n");
     for (const chunk of dataList) {
-        if (chunk.startsWith("data:")) {
-            content += JSON.parse(chunk.substring(5)).content;
-        }
+        // if (chunk.startsWith("data:")) {
+        content += chunk; // JSON.parse(chunk.substring(5)).content;
+        // }
     }
     return content;
 }
